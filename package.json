@@ -1,0 +1,24 @@
+{
+  "name": "lcdsim_",
+  "version": "1.0.0",
+  "description": "Below is a **clean, import type { LCDState } from '../../domain/lcd/lcdState';\nimport type { Config } from '../../application/config/configService';\nimport type { LogEntry } from '../../application/logs/logService';sign** suitable for a separated frontend–backend deployment.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev:backend": "npx tsx run_server.ts",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

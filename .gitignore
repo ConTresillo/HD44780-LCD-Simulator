@@ -1,0 +1,26 @@
+# Ignore dependencies
+node_modules/
+
+# Ignore frontend folder as requested
+/frontend/
+
+# Ignore all tests in backend
+/backend/tests/
+
+# Ignore Phase documentation
+/Phase*.md
+
+# Ignore result dumps and logs
+/*.txt
+/*.json
+
+# Ignore root-level temporary/test scripts
+/run_demo.ts
+/run_demo.test.ts
+/run_server.ts
+/manual_ws_test.test.ts
+
+# Re-include essential config files required for the backend to run
+!/package.json
+!/package-lock.json
+!/tsconfig.json
