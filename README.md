@@ -1,7 +1,3 @@
-Below is a **clean, implementation-grade architecture document** derived from your original spec , but reorganized into a **strict, scalable system design** suitable for a separated frontend–backend deployment.
-
----
-
 # LCDsim — Full System Architecture
 
 ---
@@ -619,13 +615,3 @@ frontend/
 * Communication = real-time event stream
 * Domain = hardware-accurate behavior core
 
----
-
-This structure ensures:
-
-* correctness of simulation
-* strict separation of concerns
-* extensibility toward VM and hardware modes
-* deployable frontend/backend architecture without redesign
-
----
