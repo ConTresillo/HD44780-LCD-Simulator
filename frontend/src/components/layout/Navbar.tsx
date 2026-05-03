@@ -1,0 +1,87 @@
+/**
+ * Navbar.tsx — Top navigation bar.
+ * Design from frontend_old: heading font, settings gear.
+ */
+import React, { useState } from 'react';
+import { useTheme } from '../../app/ThemeProvider';
+import { useLCD } from '../../hooks/useLCD';
+import { SettingsModal } from './SettingsModal';
+
+export const Navbar: React.FC = () => {
+  const { theme } = useTheme();
+  const { hardware, connection } = useLCD();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const isBusy = hardware?.busyFlag ?? false;
+
+  return (
+    <>
+      <header style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 24px',
+        background: theme.navbar.background,
+        borderBottom: `1px solid ${theme.navbar.border}`,
+        boxShadow: theme.navbar.headingShadow,
+        boxSizing: 'border-box',
+      }}>
+        {/* Logo */}
+        <div style={{
+          fontFamily: theme.core.headingFont,
+          fontSize: 14,
+          color: theme.navbar.heading,
+          letterSpacing: '0.15em',
+          userSelect: 'none',
+        }}>
+          HD44780 LCD SIMULATOR
+        </div>
+
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Busy / Ready pill */}
+          <div style={{
+            background: isBusy ? theme.statusBadge.busyBg : theme.statusBadge.readyBg,
+            color: isBusy ? theme.statusBadge.busyText : theme.statusBadge.readyText,
+            padding: '3px 12px', borderRadius: 99,
+            fontSize: 10, fontFamily: theme.core.headingFont,
+            letterSpacing: '0.1em',
+          }}>
+            {isBusy ? '● BUSY' : '● READY'}
+          </div>
+
+          {/* Connection pill */}
+          <div style={{
+            background: theme.statusBadge[connection === 'connected' ? 'connectedBg' : 'disconnectedBg'],
+            color: theme.statusBadge[connection === 'connected' ? 'connectedText' : 'disconnectedText'],
+            padding: '3px 12px', borderRadius: 99,
+            fontSize: 10, fontFamily: theme.core.headingFont,
+            letterSpacing: '0.1em',
+          }}>
+            {connection.toUpperCase()}
+          </div>
+
+          {/* Settings */}
+          <button
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open settings"
+            style={{
+              width: 30, height: 30, borderRadius: 6,
+              border: `1px solid ${theme.menuDropdown.border}`,
+              background: theme.menuDropdown.background,
+              color: theme.menuDropdown.text,
+              cursor: 'pointer', fontSize: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 150ms',
+            }}
+          >
+            ⚙
+          </button>
+        </div>
+      </header>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
+  );
+};

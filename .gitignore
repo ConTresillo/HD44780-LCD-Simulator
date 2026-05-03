@@ -2,7 +2,7 @@
 node_modules/
 
 # Ignore frontend folder as requested
-/frontend/
+/frontend_old/
 
 # Ignore all tests in backend
 /backend/tests/
