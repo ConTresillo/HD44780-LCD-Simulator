@@ -1,0 +1,30 @@
+export declare const DDRAM_SIZE: 80, CGRAM_SIZE: 64;
+export type LCDState = {
+    ddram: Uint8Array;
+    cgram: Uint8Array;
+    addressPointer: number;
+    ramType: 'DDRAM' | 'CGRAM';
+    displayOn: boolean;
+    cursorOn: boolean;
+    blinkOn: boolean;
+    entryModeIncrement: boolean;
+    entryModeShift: boolean;
+    shiftOffset: number;
+    font: '5x8' | '5x10';
+    rs: boolean;
+    rw: boolean;
+    en: boolean;
+    pendingNibble: number | null;
+    pendingRs: boolean | null;
+    pendingRw: boolean | null;
+    dataLength: 4 | 8;
+    numLines: 1 | 2;
+    busyFlag: boolean;
+    busyUntil: number;
+    initialized: boolean;
+    initCount: number;
+    powerOnTime: number;
+    fastMode: boolean;
+};
+export declare function createInitialState(): LCDState;
+//# sourceMappingURL=lcdState.d.ts.map

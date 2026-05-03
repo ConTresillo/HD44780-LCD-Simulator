@@ -1,0 +1,26 @@
+import { LCD_CONSTANTS } from './lcdConstants.js';
+export function writeData(byte, state) {
+    const { DDRAM_SIZE, CGRAM_SIZE } = LCD_CONSTANTS;
+    // 1. Write to target RAM
+    if (state.ramType === 'DDRAM') {
+        state.ddram[state.addressPointer] = byte;
+    }
+    else {
+        state.cgram[state.addressPointer] = byte;
+    }
+    // 2. Update address pointer
+    const size = state.ramType === 'DDRAM' ? DDRAM_SIZE : CGRAM_SIZE;
+    if (state.entryModeIncrement) {
+        state.addressPointer = (state.addressPointer + 1) % size;
+    }
+    else {
+        state.addressPointer = (state.addressPointer - 1 + size) % size;
+    }
+    // 3. Shift display if entry mode shift is enabled and we are in DDRAM
+    if (state.entryModeShift && state.ramType === 'DDRAM') {
+        const shiftDir = state.entryModeIncrement ? 1 : -1;
+        // Shift wraps within the 40-char line, not globally
+        state.shiftOffset = (state.shiftOffset + shiftDir + 40) % 40;
+    }
+}
+//# sourceMappingURL=writeEngine.js.map

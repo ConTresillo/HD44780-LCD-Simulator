@@ -4,7 +4,9 @@
  */
 import { useHardware } from '../store/store';
 import { api } from '../services';
-import type { LCDHardwareState, LCDView, ConnectionStatus } from '../services/api.types';
+import type { LCDHardwareState, LCDView, ConnectionStatus, GPIOTrace } from '../services/api.types';
+
+export type { GPIOTrace };
 
 export type UseLCDReturn = {
   hardware: LCDHardwareState | null;

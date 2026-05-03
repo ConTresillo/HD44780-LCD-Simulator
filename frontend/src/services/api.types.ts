@@ -44,3 +44,16 @@ export type LogEntry = {
 };
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
+
+export type GPIOTrace = {
+  timestamp: number;
+  rs: boolean;
+  rw: boolean;
+  en: boolean;
+  data: number;
+  mode: '8bit' | '4bit';
+  nibblePhase: 'HIGH' | 'LOW' | null;
+  assembledByte: number | null;
+  executed: boolean;
+  instruction?: string;
+};

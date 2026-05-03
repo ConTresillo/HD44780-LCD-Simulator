@@ -47,7 +47,7 @@ export const LcdCell: React.FC<Props> = ({ bitmap, isCursor, isBlinking }) => {
             return (
               <LcdPixel 
                 key={c} 
-                lit={lit === 1 || isUnderline} 
+                lit={Boolean(lit === 1 || isUnderline)} 
               />
             );
           })}

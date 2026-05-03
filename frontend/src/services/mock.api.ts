@@ -54,6 +54,7 @@ function makeInitialState(): LCDHardwareState {
     initialized: false,
     initCount: 0,
     powerOnTime: Date.now(),
+    fastMode: false,
   };
 }
 
@@ -63,7 +64,7 @@ function buildView(state: LCDHardwareState, cols = 16, rows = 2): LCDView {
 
   if (!state.displayOn) {
     for (let r = 0; r < rows; r++) display.push(new Array(cols).fill(0x20));
-    return { display, cursor: { row: -1, col: -1 }, cursorVisible: false, glyphs: [] };
+    return { display, cursor: { row: -1, col: -1 }, cursorVisible: false, glyphs: [], rows, cols };
   }
 
   for (let r = 0; r < rows; r++) {
@@ -100,7 +101,7 @@ function buildView(state: LCDHardwareState, cols = 16, rows = 2): LCDView {
     glyphs.push(glyph);
   }
 
-  return { display, cursor: { row: cursorRow, col: cursorCol }, cursorVisible, glyphs };
+  return { display, cursor: { row: cursorRow, col: cursorCol }, cursorVisible, glyphs, rows, cols };
 }
 
 // ── Mock command processor ────────────────────────────────────────────────────
