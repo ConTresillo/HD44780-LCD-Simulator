@@ -1,0 +1,25 @@
+{
+  "name": "lcdsim_",
+  "version": "1.0.0",
+  "description": "Below is a **clean, import type { LCDState } from '../../domain/lcd/lcdState';\nimport { LCDService } from './application/services/lcdService.js';\nimport { createServer } from './interface/ws/wsServer.js';\nsign** suitable for a separated frontend–backend deployment.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx run_server.ts",
+    "dev": "tsx run_server.ts",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "tsx": "^4.19.2",
+    "ws": "^8.20.0"
+  }
+}
