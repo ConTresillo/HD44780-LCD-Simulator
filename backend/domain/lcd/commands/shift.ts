@@ -16,12 +16,14 @@ export function setShift(byte: number, state: LCDState): void {
 
   if (SC === 0) {
     // MODE A: Cursor Move
+    // Cursor move affects DDRAM address pointer globally
     state.addressPointer = (state.addressPointer + direction + DDRAM_SIZE) % DDRAM_SIZE;
   } else {
     // MODE B: Display Shift
     // Spec: "Display Shift Right" moves characters RIGHT, meaning window moves LEFT.
     // Spec: "Display Shift Left" moves characters LEFT, meaning window moves RIGHT.
+    // Shift is constrained to 40-char line windows, NOT the entire DDRAM.
     const shiftDirection = RL === 1 ? -1 : 1;
-    state.shiftOffset = (state.shiftOffset + shiftDirection + DDRAM_SIZE) % DDRAM_SIZE;
+    state.shiftOffset = (state.shiftOffset + shiftDirection + 40) % 40;
   }
 }

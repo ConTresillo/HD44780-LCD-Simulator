@@ -27,6 +27,7 @@ export type LCDState = {
   initialized: boolean;
   initCount: number;
   powerOnTime: number;
+  fastMode: boolean;
 };
 
 export function createInitialState(): LCDState {
@@ -55,5 +56,6 @@ export function createInitialState(): LCDState {
     initialized: false,
     initCount: 0,
     powerOnTime: Date.now(),
+    fastMode: false,
   };
 }

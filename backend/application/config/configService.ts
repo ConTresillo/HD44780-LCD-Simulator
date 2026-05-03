@@ -1,6 +1,7 @@
 export type Config = {
   displayRows: number;
   displayCols: number;
+  fastMode: boolean;
 };
 
 export class ConfigService {
@@ -10,6 +11,7 @@ export class ConfigService {
     this.config = {
       displayRows: 2,
       displayCols: 16,
+      fastMode: false,
       ...initialConfig,
     };
   }

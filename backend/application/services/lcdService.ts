@@ -22,6 +22,10 @@ export class LCDService {
   public eventBus: EventBus;
   public logService: LogService;
   public configService: ConfigService;
+  
+  private executionQueue: Promise<void> = Promise.resolve();
+  private readonly MAX_QUEUE_DEPTH = 100;
+  private currentQueueSize = 0;
 
   constructor() {
     this.state = createInitialState();
@@ -30,31 +34,89 @@ export class LCDService {
     this.configService = new ConfigService();
   }
 
-  public sendCommand(byte: number): void {
-    updateBusyStatus(this.state);
-    if (this.state.busyFlag) return;
+  public sendCommand(byte: number): Promise<void> {
+    if (this.currentQueueSize >= this.MAX_QUEUE_DEPTH) {
+      this.logService.log('ERROR', 'Command rejected: Task queue full');
+      return Promise.resolve();
+    }
 
-    const handled = dispatchCommand(byte, this.state);
-    if (handled) {
-      // During power-on init dance, host uses fixed delays — no BF polling.
-      // Don't set busy until the controller is initialized.
-      if (this.state.initialized) {
-        setBusy(this.state, byte);
+    this.currentQueueSize++;
+    this.executionQueue = this.executionQueue.then(async () => {
+      try {
+        await this.waitForHardwareReady();
+        
+        const handled = executeSendCommand(this, byte);
+        if (handled) {
+          const fastMode = this.configService.getConfig().fastMode;
+          if (this.state.initialized && !fastMode) {
+            setBusy(this.state, byte);
+            this.scheduleBusyClearUpdate(byte);
+          }
+          this.logService.log('COMMAND', `Executed command: 0x${byte.toString(16).padStart(2, '0').toUpperCase()}`);
+          this.eventBus.emit({ type: 'COMMAND_EXECUTED' });
+          this.emitStateUpdate();
+        }
+      } finally {
+        this.currentQueueSize--;
       }
+    });
+
+    return this.executionQueue;
+  }
+
+  private async waitForHardwareReady(): Promise<void> {
+    updateBusyStatus(this.state);
+    while (this.state.busyFlag) {
+      const remaining = Math.max(1, this.state.busyUntil - performance.now());
+      await new Promise(r => setTimeout(r, remaining));
+      updateBusyStatus(this.state);
     }
   }
 
-  public writeData(byte: number | string): void {
+  private scheduleBusyClearUpdate(byte: number): void {
+    // We use a longer delay for the UI update than the actual hardware simulation
+    // to ensure the 'Busy' state is visible to the human eye (min 50ms)
+    const delay = (byte === 0x01 || byte === 0x02) ? 500 : 50; 
+    setTimeout(() => {
+      if (updateBusyStatus(this.state)) {
+        this.emitStateUpdate();
+      }
+    }, delay);
+  }
+
+  public writeData(byte: number | string): Promise<void> {
     const numericByte = typeof byte === 'string' ? byte.charCodeAt(0) : byte;
     
-    // HARDWARE GATE: Reject all data writes until controller is initialized
-    if (!this.state.initialized) return;
+    if (!this.state.initialized) {
+      this.logService.log('ERROR', 'Data write rejected: Controller not initialized');
+      return Promise.resolve();
+    }
 
-    updateBusyStatus(this.state);
-    if (this.state.busyFlag) return;
+    if (this.currentQueueSize >= this.MAX_QUEUE_DEPTH) {
+      this.logService.log('ERROR', 'Data write rejected: Task queue full');
+      return Promise.resolve();
+    }
 
-    executeWriteData(this, numericByte);
-    setBusy(this.state, 0xFF); // Generic data write busy
+    this.currentQueueSize++;
+    this.executionQueue = this.executionQueue.then(async () => {
+      try {
+        await this.waitForHardwareReady();
+
+        executeWriteData(this, numericByte);
+        const fastMode = this.configService.getConfig().fastMode;
+        if (!fastMode) {
+          setBusy(this.state, 0xFF); // Generic data write busy
+          this.scheduleBusyClearUpdate(0xFF);
+        }
+        this.logService.log('DATA', `Wrote data: '${String.fromCharCode(numericByte)}' (0x${numericByte.toString(16).padStart(2, '0').toUpperCase()})`);
+        this.eventBus.emit({ type: 'DATA_WRITTEN' });
+        this.emitStateUpdate();
+      } finally {
+        this.currentQueueSize--;
+      }
+    });
+
+    return this.executionQueue;
   }
 
   public clearDisplay(): void {
@@ -65,10 +127,19 @@ export class LCDService {
     this.sendCommand(0x80 | address);
   }
 
+  public updateConfig(newConfig: Partial<Config>): void {
+    this.configService.updateConfig(newConfig);
+    if (newConfig.fastMode !== undefined) {
+      this.state.fastMode = newConfig.fastMode;
+    }
+    this.emitStateUpdate();
+  }
+
   public reset(): void {
     executeReset(this);
     this.state.busyFlag = false;
     this.state.busyUntil = 0;
+    this.state.fastMode = this.configService.getConfig().fastMode;
   }
 
   public getState(): LCDState {
@@ -85,7 +156,6 @@ export class LCDService {
       return Array(rows).fill(Array(cols).fill(0x20));
     }
 
-    const { DDRAM_SIZE } = LCD_CONSTANTS;
     const offsets = getRowOffsets(rows);
     const display: number[][] = [];
     const shift = this.state.shiftOffset;
@@ -94,7 +164,9 @@ export class LCDService {
       const row = [];
       const base = offsets[r] ?? 0;
       for (let c = 0; c < cols; c++) {
-        const address = (base + c + shift) % DDRAM_SIZE;
+        // Shift moves the window over a 40-character line limit
+        const offset = (c + shift) % 40;
+        const address = base + offset;
         row.push(this.state.ddram[address] ?? 0x20);
       }
       display.push(row);
@@ -114,21 +186,24 @@ export class LCDService {
 
     if (this.state.ramType === 'CGRAM') return { row: -1, col: -1 };
 
-    const { DDRAM_SIZE } = LCD_CONSTANTS;
     const { displayRows: rows, displayCols: cols } = this.configService.getConfig();
     const offsets = getRowOffsets(rows);
     const ptr = this.state.addressPointer;
     const shift = this.state.shiftOffset;
 
-    // Apply GLOBAL shift projection
-    const projected = (ptr - shift + DDRAM_SIZE) % DDRAM_SIZE;
-
     for (let r = 0; r < rows; r++) {
       const base = offsets[r] ?? 0;
       
-      // If the projected address sits within this row's visible columns
-      if (projected >= base && projected < base + cols) {
-        return { row: r, col: projected - base };
+      // Check if the cursor is physically located on this 40-char line
+      if (ptr >= base && ptr < base + 40) {
+        const offsetInLine = ptr - base;
+        // Determine its visible column accounting for shift
+        const col = (offsetInLine - shift + 40) % 40;
+        
+        // Is it within the visible window (cols)?
+        if (col < cols) {
+          return { row: r, col };
+        }
       }
     }
 
@@ -145,10 +220,31 @@ export class LCDService {
       trace: trace
     });
 
-    if (hadFallingEdge && trace.executed) {
-      this.eventBus.emit({ type: 'COMMAND_EXECUTED' });
+    if (hadFallingEdge) {
+      if (trace.executed) {
+        this.eventBus.emit({ type: 'COMMAND_EXECUTED' });
+        
+        // If it was a write that set the busy flag, schedule a clear update
+        const fastMode = this.configService.getConfig().fastMode;
+        if (this.state.busyFlag && !fastMode) {
+          // We don't know the byte easily here without looking at trace, 
+          // but we can just use a generic delay or check trace.assembledByte
+          this.scheduleBusyClearUpdate(trace.assembledByte ?? 0xFF);
+        }
+      }
       this.emitStateUpdate();
     }
+  }
+
+  public pulseGPIO(data: number, rs: boolean, rw: boolean): void {
+    // Atomic Hardware Pulse: 0 -> 1 -> 0
+    // 1. Set pins + EN=High
+    this.processGPIO(data, rs, true, rw);
+    // 2. Small delay (simulated hardware strobe)
+    setTimeout(() => {
+      // 3. EN=Low (Falling edge triggers execution)
+      this.processGPIO(data, rs, false, rw);
+    }, 2); // 2ms hardware strobe
   }
 
   public emitStateUpdate(): void {

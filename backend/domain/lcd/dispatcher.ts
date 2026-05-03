@@ -22,6 +22,7 @@ export function dispatchCommand(byte: number, state: LCDState): boolean {
         state.initialized = true;
       }
       state.dataLength = 8; // Force 8-bit during init
+      return true; // Return true so service emits update
     }
     // Block everything else — including non-8-bit function set
     return false;

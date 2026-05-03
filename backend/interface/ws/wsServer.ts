@@ -16,6 +16,7 @@ export function createServer(port: number, service: LCDService): WebSocketServer
     // 2. Send initial State immediately on connection
     const stateSnapshot = service.getState();
     const cursor = service.getCursorPosition();
+    const config = service.configService.getConfig();
     const initialStateMsg: ServerMessage = {
       type: 'STATE_UPDATE',
       state: {
@@ -24,6 +25,8 @@ export function createServer(port: number, service: LCDService): WebSocketServer
         cgram: Array.from(stateSnapshot.cgram)
       } as any,
       view: {
+        rows: config.displayRows,
+        cols: config.displayCols,
         display: service.getVisibleDisplay(),
         cursor: { row: cursor.row, col: cursor.col },
         cursorVisible: cursor.row !== -1 && stateSnapshot.cursorOn && stateSnapshot.displayOn,

@@ -15,6 +15,7 @@ export function setupEventBridge(ws: WebSocket, service: LCDService): () => void
     if (event.type === 'STATE_UPDATED') {
       const stateEvent = event as StateUpdatedEvent;
       const cursor = service.getCursorPosition();
+      const config = service.configService.getConfig();
       
       const stateData = {
         ...stateEvent.state,
@@ -23,6 +24,8 @@ export function setupEventBridge(ws: WebSocket, service: LCDService): () => void
       };
 
       const viewData = {
+        rows: config.displayRows,
+        cols: config.displayCols,
         display: service.getVisibleDisplay(),
         cursor: { row: cursor.row, col: cursor.col },
         cursorVisible: cursor.row !== -1 && stateEvent.state.cursorOn && stateEvent.state.displayOn,

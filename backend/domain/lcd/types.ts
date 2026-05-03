@@ -10,4 +10,5 @@ export interface BusTrace {
   assembledByte: number | null;
   readByte: number | null;
   executed: boolean;
+  instruction?: string;
 }

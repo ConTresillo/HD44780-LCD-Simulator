@@ -45,7 +45,7 @@ export function processBusSignal(state: LCDState, data: number, rs: boolean, en:
     if (rw === false) {
       // WRITE
       trace.assembledByte = data;
-      trace.executed = executeBusCycle(state, data, rs, false);
+      trace.executed = executeBusCycle(state, data, rs, false, trace);
     } else {
       // READ
       trace.readByte = performRead(state, rs);
@@ -69,7 +69,7 @@ export function processBusSignal(state: LCDState, data: number, rs: boolean, en:
         // WRITE: Assemble full byte from two nibbles
         const fullByte = state.pendingNibble | ((data >> 4) & 0x0F);
         trace.assembledByte = fullByte;
-        trace.executed = executeBusCycle(state, fullByte, currentRs, false);
+        trace.executed = executeBusCycle(state, fullByte, currentRs, false, trace);
       } else {
         // READ: Put data on bus (simulated as readByte in trace)
         trace.readByte = performRead(state, currentRs);
@@ -103,8 +103,23 @@ function performRead(state: LCDState, rs: boolean): number {
   }
 }
 
-function executeBusCycle(state: LCDState, byte: number, rs: boolean, rw: boolean): boolean {
+function getInstructionName(byte: number, rs: boolean): string {
+  if (rs) return `Write Data ('${String.fromCharCode(byte)}')`;
+  if (byte === 0x01) return 'Clear Display';
+  if (byte === 0x02) return 'Return Home';
+  if ((byte & 0xFC) === 0x04) return 'Entry Mode Set';
+  if ((byte & 0xF8) === 0x08) return 'Display Control';
+  if ((byte & 0xF0) === 0x10) return 'Cursor/Display Shift';
+  if ((byte & 0xE0) === 0x20) return 'Function Set';
+  if ((byte & 0xC0) === 0x40) return 'Set CGRAM Address';
+  if ((byte & 0x80) === 0x80) return 'Set DDRAM Address';
+  return `Unknown (0x${byte.toString(16).toUpperCase()})`;
+}
+
+function executeBusCycle(state: LCDState, byte: number, rs: boolean, rw: boolean, trace: BusTrace): boolean {
   updateBusyStatus(state);
+  trace.instruction = getInstructionName(byte, rs);
+  
   // Busy check blocks WRITES only (in real hardware, status reads work while busy)
   if (state.busyFlag && rw === false) return false;
 

@@ -21,6 +21,7 @@ export function writeData(byte: number, state: LCDState): void {
   // 3. Shift display if entry mode shift is enabled and we are in DDRAM
   if (state.entryModeShift && state.ramType === 'DDRAM') {
     const shiftDir = state.entryModeIncrement ? 1 : -1;
-    state.shiftOffset = (state.shiftOffset + shiftDir + DDRAM_SIZE) % DDRAM_SIZE;
+    // Shift wraps within the 40-char line, not globally
+    state.shiftOffset = (state.shiftOffset + shiftDir + 40) % 40;
   }
 }

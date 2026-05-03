@@ -18,7 +18,13 @@ export function handleMessage(msg: ClientMessage, service: LCDService): void {
         service.reset();
         break;
       case 'GPIO_SIGNAL':
-        service.processGPIO(msg.data, msg.rs, msg.en);
+        service.processGPIO(msg.data, msg.rs, msg.en, msg.rw);
+        break;
+      case 'UPDATE_CONFIG':
+        service.updateConfig(msg.config);
+        break;
+      case 'PULSE_GPIO':
+        service.pulseGPIO(msg.data, msg.rs, msg.rw);
         break;
       default:
         throw new Error(`Unknown message type: ${(msg as any).type}`);
