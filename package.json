@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "npx tsx run_server.ts",
     "dev:backend": "npx tsx run_server.ts",
     "dev:frontend": "npm run dev --prefix frontend",
     "test": "vitest"

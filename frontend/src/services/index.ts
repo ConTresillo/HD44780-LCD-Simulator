@@ -11,7 +11,8 @@
 import { createWebSocketAPI } from './websocket.api';
 
 // To switch back to mock for offline dev, use createMockAPI() from './mock.api'
-export const api = createWebSocketAPI('ws://localhost:3000');
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+export const api = createWebSocketAPI(WS_URL);
 
 export type { LCDAPI, LCDStatePayload } from './api.interface';
 export type { LCDHardwareState, LCDView, LogEntry, ConnectionStatus } from './api.types';
