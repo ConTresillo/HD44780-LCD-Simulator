@@ -10,7 +10,7 @@ import type { LCDView } from '../../services/api.types';
 
 // ── Simplified ROM — maps charCode to 5×8 bitmap ─────────────────────────────
 // Real ROM has 256 entries; this covers printable ASCII with a minimal pattern.
-function charToBitmap(code: number): number[][] {
+export function charToBitmap(code: number): number[][] {
   if (code === 0x20 || code === 0x00) return Array(8).fill(Array(5).fill(0));
 
   // Encode each character as 8 rows of 5 bits, stored as numbers
@@ -112,6 +112,7 @@ function charToBitmap(code: number): number[][] {
 interface Props {
   view: LCDView;
   blinkOn: boolean;
+  hardware?: any;
 }
 
 export const LcdDisplay: React.FC<Props> = ({ view, blinkOn, hardware }) => {
@@ -138,32 +139,50 @@ export const LcdDisplay: React.FC<Props> = ({ view, blinkOn, hardware }) => {
       {isHovered && hardware && (
         <div style={{
           position: 'absolute',
-          top: -120, left: '50%',
+          top: 'calc(100% + 12px)', left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.92)',
-          color: '#fff',
-          padding: '12px 20px',
+          background: theme.diagnostic.background,
+          color: theme.diagnostic.text,
+          padding: '16px 24px',
           borderRadius: 12,
           fontSize: 10,
-          fontFamily: theme.core.headingFont,
+          fontFamily: theme.core.bodyFont,
           zIndex: 100,
           pointerEvents: 'none',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          boxShadow: theme.diagnostic.shadow,
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '8px 24px',
-          border: '1px solid rgba(255,255,255,0.1)'
+          gap: '12px 32px',
+          border: `1px solid ${theme.diagnostic.border}`,
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Address Pointer: <span style={{ color: '#fff' }}>0x{hardware.addressPointer.toString(16).toUpperCase()}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Mode: <span style={{ color: '#fff' }}>{hardware.ramType}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Entry Mode: <span style={{ color: '#fff' }}>{hardware.entryModeIncrement ? 'Increment' : 'Decrement'}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Display: <span style={{ color: '#fff' }}>{hardware.displayOn ? 'ON' : 'OFF'}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Cursor: <span style={{ color: '#fff' }}>{hardware.cursorOn ? 'ON' : 'OFF'}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Blink: <span style={{ color: '#fff' }}>{hardware.blinkOn ? 'ON' : 'OFF'}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Data Mode: <span style={{ color: '#fff' }}>{hardware.dataLength}-bit / {hardware.numLines}L / {hardware.font}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Busy Flag: <span style={{ color: hardware.busyFlag ? '#ff3b30' : '#34c759' }}>{hardware.busyFlag ? 'BUSY' : 'READY'}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Shift Offset: <span style={{ color: '#fff' }}>{hardware.shiftOffset}</span></div>
-          <div style={{ color: 'rgba(255,255,255,0.5)' }}>Initialized: <span style={{ color: '#fff' }}>{hardware.initialized ? 'YES' : 'NO'}</span></div>
+          {/* Addressing */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>ADDRESSING</div>
+            <div>Pointer: <span style={{ color: theme.diagnostic.value }}>0x{hardware.addressPointer.toString(16).toUpperCase()}</span></div>
+            <div>RAM: <span style={{ color: theme.diagnostic.value }}>{hardware.ramType}</span></div>
+          </div>
+
+          {/* Display Flags */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>DISPLAY FLAGS</div>
+            <div>Display: <span style={{ color: theme.diagnostic.value }}>{hardware.displayOn ? 'ON' : 'OFF'}</span></div>
+            <div>Cursor: <span style={{ color: theme.diagnostic.value }}>{hardware.cursorOn ? 'ON' : 'OFF'}</span> / <span style={{ color: theme.diagnostic.value }}>{hardware.blinkOn ? 'BLINK' : 'STATIC'}</span></div>
+          </div>
+
+          {/* Mode */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>MODE</div>
+            <div>Entry: <span style={{ color: theme.diagnostic.value }}>{hardware.entryModeIncrement ? 'INC' : 'DEC'}</span></div>
+            <div>Bus: <span style={{ color: theme.diagnostic.value }}>{hardware.dataLength}-bit</span></div>
+          </div>
+
+          {/* Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>STATUS</div>
+            <div>Busy: <span style={{ color: hardware.busyFlag ? theme.log.errorColor : theme.statusBadge.readyText, fontWeight: 'bold' }}>{hardware.busyFlag ? 'BUSY' : 'READY'}</span></div>
+            <div>Inited: <span style={{ color: theme.diagnostic.value }}>{hardware.initialized ? 'YES' : 'NO'}</span></div>
+          </div>
         </div>
       )}
       {/* Screen glass */}

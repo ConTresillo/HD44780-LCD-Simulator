@@ -22,6 +22,18 @@ export const ControlPanel: React.FC = () => {
 
   const h = hardware;
 
+  // Macro: HD44780 Standard Initialization Sequence (0x30 x3)
+  const runInitSequence = async () => {
+    // 1st 0x30
+    sendCommand(0x30);
+    await new Promise(r => setTimeout(r, 100));
+    // 2nd 0x30
+    sendCommand(0x30);
+    await new Promise(r => setTimeout(r, 40));
+    // 3rd 0x30
+    sendCommand(0x30);
+  };
+
   // Helper to construct Display Control command (0x08 | D | C | B)
   const setDisplayState = (d: boolean, c: boolean, b: boolean) => {
     let byte = 0x08;
@@ -46,26 +58,29 @@ export const ControlPanel: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       
-      {/* 1. DISPLAY CONTROL (MODULAR) */}
+      {/* 1. DISPLAY CONTROL */}
       <div>
         {label('DISPLAY CONTROL')}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <IconButton 
-            label={h?.displayOn ? "DISPLAY: ON" : "DISPLAY: OFF"} 
-            variant={h?.displayOn ? "success" : "secondary"}
+            label={h?.displayOn ? "DISP: ON" : "DISP: OFF"} 
+            variant={h?.displayOn ? "success" : "default"}
             onClick={() => setDisplayState(!h?.displayOn, !!h?.cursorOn, !!h?.blinkOn)} 
+            style={{ fontSize: 9 }}
           />
           <IconButton 
-            label={h?.cursorOn ? "CURSOR: ON" : "CURSOR: OFF"} 
-            variant={h?.cursorOn ? "success" : "secondary"}
+            label={h?.cursorOn ? "CURS: ON" : "CURS: OFF"} 
+            variant={h?.cursorOn ? "success" : "default"}
             onClick={() => setDisplayState(!!h?.displayOn, !h?.cursorOn, !!h?.blinkOn)} 
+            style={{ fontSize: 9 }}
           />
           <IconButton 
-            label={h?.blinkOn ? "BLINK: ON" : "BLINK: OFF"} 
-            variant={h?.blinkOn ? "success" : "secondary"}
+            label={h?.blinkOn ? "BLNK: ON" : "BLNK: OFF"} 
+            variant={h?.blinkOn ? "success" : "default"}
             onClick={() => setDisplayState(!!h?.displayOn, !!h?.cursorOn, !h?.blinkOn)} 
+            style={{ fontSize: 9 }}
           />
-          <IconButton label="CLEAR DISPLAY" onClick={() => sendCommand(0x01)} />
+          <IconButton label="CLEAR" onClick={() => sendCommand(0x01)} style={{ fontSize: 9 }} />
         </div>
       </div>
 
@@ -73,23 +88,43 @@ export const ControlPanel: React.FC = () => {
       <div>
         {label('SHIFT OPERATIONS')}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <IconButton label="CURSOR ←" onClick={() => sendCommand(0x10)} />
-          <IconButton label="CURSOR →" onClick={() => sendCommand(0x14)} />
-          <IconButton label="DISPLAY ←" onClick={() => sendCommand(0x18)} />
-          <IconButton label="DISPLAY →" onClick={() => sendCommand(0x1C)} />
+          <IconButton label="CURSOR ←" onClick={() => sendCommand(0x10)} style={{ fontSize: 9 }} />
+          <IconButton label="CURSOR →" onClick={() => sendCommand(0x14)} style={{ fontSize: 9 }} />
+          <IconButton label="DISPLAY ←" onClick={() => sendCommand(0x18)} style={{ fontSize: 9 }} />
+          <IconButton label="DISPLAY →" onClick={() => sendCommand(0x1C)} style={{ fontSize: 9 }} />
         </div>
       </div>
 
-      {/* 3. HARDWARE UTILITIES */}
+      {/* 3. SYSTEM CONTROL */}
       <div>
         {label('SYSTEM CONTROL')}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <IconButton label="RETURN HOME" onClick={() => sendCommand(0x02)} />
-          <IconButton label="RESET" variant="danger" onClick={reset} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <IconButton label="HOME" onClick={() => sendCommand(0x02)} style={{ fontSize: 9 }} />
+            <IconButton label="RESET" variant="danger" onClick={reset} style={{ fontSize: 9 }} />
+          </div>
+          
           <IconButton 
-            label={h?.fastMode ? "TURBO: ON" : "TURBO: OFF"} 
-            variant={h?.fastMode ? "success" : "secondary"}
+            label={h?.fastMode ? "TURBO MODE: ON" : "TURBO MODE: OFF"} 
+            variant={h?.fastMode ? "success" : "default"}
             onClick={() => updateConfig({ fastMode: !h?.fastMode })} 
+            style={{ width: '100%', fontSize: 9 }}
+          />
+          
+          <IconButton 
+            label="3x INIT SEQUENCE (0x30)" 
+            onClick={runInitSequence} 
+            variant="default"
+            style={{ 
+              width: '100%', 
+              fontSize: 9, 
+              padding: '10px',
+              border: `1px solid ${theme.core.primary}44`,
+              color: theme.core.primary,
+              background: `${theme.core.primary}08`,
+              letterSpacing: '0.05em',
+              marginTop: 4
+            }} 
           />
         </div>
       </div>

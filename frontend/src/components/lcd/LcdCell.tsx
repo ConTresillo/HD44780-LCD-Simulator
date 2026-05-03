@@ -2,6 +2,7 @@
  * LcdCell.tsx — One character cell (5 columns × 8 rows of pixels).
  */
 import React from 'react';
+import { useTheme } from '../../app/ThemeProvider';
 import { LcdPixel } from './LcdPixel';
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export const LcdCell: React.FC<Props> = ({ bitmap, isCursor, isBlinking }) => {
+  const { theme } = useTheme();
+
   return (
     <div
       className={isBlinking ? 'lcd-blink' : ''}
@@ -18,8 +21,13 @@ export const LcdCell: React.FC<Props> = ({ bitmap, isCursor, isBlinking }) => {
         display: 'inline-flex',
         flexDirection: 'column',
         gap: 1,
-        margin: '4px 3px',
-        position: 'relative'
+        margin: '2px',
+        padding: '4px',
+        background: 'rgba(0,0,0,0.05)',
+        border: `1px solid ${theme.lcd.bezelBorder}33`,
+        borderRadius: 2,
+        position: 'relative',
+        boxSizing: 'border-box'
       }}
     >
       <style>{`

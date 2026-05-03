@@ -10,34 +10,28 @@ import { useLCD } from '../../hooks/useLCD';
 export const GpioPanel: React.FC = () => {
   const { theme } = useTheme();
   const { busState, setBusState } = useLCD();
-  const { rs, rw } = busState;
-
-  const label = (text: string) => (
-    <div style={{
-      fontSize: 10, color: theme.panel.label,
-      fontFamily: theme.core.headingFont,
-      letterSpacing: '0.1em', marginBottom: 12,
-      borderBottom: `1px solid ${theme.panel.border}`,
-      paddingBottom: 6,
-    }}>
-      {text}
-    </div>
-  );
+  const { rs, rw, en } = busState;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        {label('SIGNAL PINS')}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, fontFamily: theme.core.bodyFont }}>RS (Register Select)</span>
-            <ToggleSwitch active={rs} onClick={() => setBusState({ rs: !rs })} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, fontFamily: theme.core.bodyFont }}>RW (Read / Write)</span>
-            <ToggleSwitch active={rw} onClick={() => setBusState({ rw: !rw })} />
-          </div>
-        </div>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      gap: 24,
+      padding: '0 10px'
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <DataPin label="RS" active={rs} onClick={() => setBusState({ rs: !rs })} />
+        <span style={{ fontSize: 9, fontWeight: 'bold', color: theme.core.muted }}>REG SEL</span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <DataPin label="RW" active={rw} onClick={() => setBusState({ rw: !rw })} />
+        <span style={{ fontSize: 9, fontWeight: 'bold', color: theme.core.muted }}>RD/WR</span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <DataPin label="EN" active={en} onClick={() => setBusState({ en: !en })} />
+        <span style={{ fontSize: 9, fontWeight: 'bold', color: theme.core.muted }}>ENABLE</span>
       </div>
     </div>
   );

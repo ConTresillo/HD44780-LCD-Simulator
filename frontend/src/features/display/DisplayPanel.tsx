@@ -5,8 +5,116 @@
 import React from 'react';
 import { useTheme } from '../../app/ThemeProvider';
 import { LcdDisplay } from '../../components/lcd/LcdDisplay';
-import { DataPin, PulseButton } from '../../components/controls';
+import { DataPin, PulseButton, TextInput } from '../../components/controls';
+import { GpioPanel } from '../controls/GpioPanel';
 import { useLCD } from '../../hooks/useLCD';
+
+// ── Sub-component for individual Bus Bits ────────────────────────────────────
+interface BusBitProps {
+  bit: number;
+  data: number;
+  onToggle: (bit: number) => void;
+  theme: any;
+}
+const BusBit: React.FC<BusBitProps> = ({ bit, data, onToggle, theme }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const isActive = (data >> bit) & 1;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      <button
+        onClick={() => onToggle(bit)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          width: 24, height: 28,
+          background: isActive ? theme.dataPin.activeBorder : isHovered ? theme.dataPin.hoverBorder || theme.dataPin.inactiveBg : theme.dataPin.inactiveBg,
+          color: isActive ? theme.dataPin.activeText : isHovered ? theme.dataPin.hoverText || theme.dataPin.inactiveText : theme.dataPin.inactiveText,
+          border: `1px solid ${isActive ? theme.dataPin.activeBorder : isHovered ? theme.dataPin.hoverBorder || theme.dataPin.inactiveBorder : theme.dataPin.inactiveBorder}`,
+          borderRadius: 4,
+          fontSize: 11, fontWeight: 'bold',
+          cursor: 'pointer',
+          transition: 'all 200ms',
+          boxShadow: isActive ? theme.dataPin.activeShadow : isHovered ? `0 0 8px ${theme.dataPin.activeBorder}40` : 'none',
+          transform: isActive ? 'scale(1.08)' : isHovered ? 'scale(1.15)' : 'scale(1)',
+          fontFamily: theme.core.bodyFont,
+          zIndex: isHovered ? 10 : 1
+        }}
+      >
+        {isActive}
+      </button>
+      <span style={{ fontSize: 8, fontWeight: 'bold', color: theme.core.muted }}>D{bit}</span>
+    </div>
+  );
+};
+
+// ── Sub-component for Manual Bus Injection ──────────────────────────────────
+const BusInput: React.FC<{ 
+  data: number; 
+  onUpdate: (val: number) => void;
+  theme: any;
+}> = ({ data, onUpdate, theme }) => {
+  const [mode, setMode] = React.useState<'HEX' | 'BIN' | 'ASCII'>('HEX');
+  const [localVal, setLocalVal] = React.useState('');
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  // Sync local value from data bus ONLY when NOT focused
+  React.useEffect(() => {
+    if (!isFocused) {
+      if (mode === 'HEX') setLocalVal(data.toString(16).toUpperCase().padStart(2, '0'));
+      else if (mode === 'BIN') setLocalVal(data.toString(2).padStart(8, '0'));
+      else if (mode === 'ASCII') setLocalVal(String.fromCharCode(data));
+    }
+  }, [data, mode, isFocused]);
+
+  const handleChange = (val: string) => {
+    setLocalVal(val);
+    let num = data;
+    if (mode === 'HEX') {
+      const parsed = parseInt(val, 16);
+      if (!isNaN(parsed)) num = parsed & 0xFF;
+    } else if (mode === 'BIN') {
+      const parsed = parseInt(val, 2);
+      if (!isNaN(parsed)) num = parsed & 0xFF;
+    } else if (mode === 'ASCII') {
+      if (val.length > 0) num = val.charCodeAt(val.length - 1) & 0xFF;
+    }
+    if (num !== data) onUpdate(num);
+  };
+
+  const btnStyle = (m: string) => ({
+    padding: '4px 10px',
+    borderRadius: 6,
+    fontSize: 9,
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'all 200ms',
+    border: `1px solid ${mode === m ? theme.core.primary : theme.panel.border}`,
+    background: mode === m ? `${theme.core.primary}20` : 'transparent',
+    color: mode === m ? theme.core.primary : theme.core.muted,
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 9, fontWeight: 'bold', color: theme.panel.label }}>MANUAL INJECTION</span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['HEX', 'BIN', 'ASCII'] as const).map(m => (
+            <button key={m} style={btnStyle(m) as any} onClick={() => setMode(m)}>{m}</button>
+          ))}
+        </div>
+      </div>
+      <TextInput 
+        value={localVal}
+        onChange={handleChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        width="100%"
+        placeholder={`Enter ${mode} value...`}
+      />
+    </div>
+  );
+};
 
 export const DisplayPanel: React.FC = () => {
   const { theme } = useTheme();
@@ -28,24 +136,9 @@ export const DisplayPanel: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: 12,
+      gap: 20,
       width: '100%',
     }}>
-      {/* MODE BADGE */}
-      <div style={{
-        background: rs ? 'rgba(52, 199, 89, 0.15)' : 'rgba(0, 122, 255, 0.15)',
-        color: rs ? '#34c759' : '#007aff',
-        padding: '4px 12px',
-        borderRadius: 20,
-        fontSize: 10,
-        fontWeight: 'bold',
-        fontFamily: theme.core.headingFont,
-        letterSpacing: '0.05em',
-        border: `1px solid ${rs ? 'rgba(52, 199, 89, 0.3)' : 'rgba(0, 122, 255, 0.3)'}`
-      }}>
-        MODE: {rs ? 'DATA (RS=1)' : 'COMMAND (RS=0)'}
-      </div>
-
       {/* 1. LCD DISPLAY */}
       <LcdDisplay
         view={view}
@@ -53,72 +146,103 @@ export const DisplayPanel: React.FC = () => {
         hardware={hardware || undefined}
       />
 
-      {/* 2. BUS & EXECUTION FLOW */}
+      {/* 2. THE SIGNAL HUB (BUS + CONTROL) */}
       <div style={{
+        width: '100%',
+        maxWidth: '540px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: 12,
-        width: '100%'
+        gap: 16,
+        padding: '20px',
+        background: theme.core.surface,
+        borderRadius: 20,
+        border: `1px solid ${theme.panel.border}`,
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 20,
-          background: theme.panel.background,
-          border: `1px solid ${theme.panel.border}`,
-          padding: '12px 24px',
-          borderRadius: 16,
-        }}>
-          {/* Compact 8-bit Bus */}
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[7, 6, 5, 4, 3, 2, 1, 0].map(bit => (
-              <DataPin 
-                key={bit}
-                label={`D${bit}`} 
-                active={((data >> bit) & 1) === 1} 
-                onClick={() => setBusState({ data: data ^ (1 << bit) })} 
-              />
-            ))}
+        {/* BUS ROW */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 'bold', color: theme.panel.label, letterSpacing: '0.05em' }}>DATA BUS (8-BIT REGISTER)</div>
+          
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ 
+              flex: 1,
+              height: 72,
+              display: 'flex', 
+              background: theme.core.background, 
+              padding: '0 16px', 
+              borderRadius: 12,
+              border: `1px solid ${theme.panel.border}`,
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: `inset 0 2px 10px ${theme.core.background}`
+            }}>
+              {[7, 6, 5, 4, 3, 2, 1, 0].map(bit => (
+                <BusBit 
+                  key={bit} 
+                  bit={bit} 
+                  data={data} 
+                  theme={theme} 
+                  onToggle={(b) => setBusState({ data: data ^ (1 << b) })} 
+                />
+              ))}
+            </div>
+
+            <PulseButton 
+              label="PULSE EN" 
+              onClick={handlePulse} 
+              style={{ height: 72, padding: '0 24px', borderRadius: 12, minWidth: 120 }}
+            />
           </div>
+        </div>
 
-          <div style={{ width: 2, height: 30, background: theme.panel.border }} />
+        {/* VALUE READOUTS */}
+        <div style={{ 
+          display: 'flex', 
+          gap: 20, 
+          fontSize: 10, 
+          fontWeight: 'bold', 
+          color: theme.core.muted, 
+          background: theme.core.background, 
+          padding: '6px 12px', 
+          borderRadius: 8,
+          border: `1px solid ${theme.panel.border}`
+        }}>
+           <span>HEX: <span style={{ color: theme.core.primary }}>0x{data.toString(16).toUpperCase().padStart(2, '0')}</span></span>
+           <span>BIN: <span style={{ color: theme.core.primary }}>{data.toString(2).padStart(8, '0')}</span></span>
+           <span>DEC: <span style={{ color: theme.core.primary }}>{data}</span></span>
+        </div>
 
-          {/* PROMINENT EN PULSE */}
-          <PulseButton 
-            label="PULSE EN" 
-            onClick={handlePulse} 
-            style={{ height: 44, padding: '0 24px' }}
+        {/* CONTROL SIGNALS */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: 16,
+          borderTop: `1px solid ${theme.panel.border}`, 
+          paddingTop: 16 
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 'bold', color: theme.panel.label, letterSpacing: '0.05em' }}>CONTROL SIGNALS</div>
+          <GpioPanel />
+          <BusInput 
+            data={data} 
+            onUpdate={(val) => setBusState({ data: val })} 
+            theme={theme} 
           />
         </div>
 
         {/* LATCH FEEDBACK */}
         <div style={{ 
-          height: 20, 
-          fontSize: 10, 
-          fontFamily: theme.core.bodyFont, 
+          height: 12, 
+          fontSize: 9, 
+          fontFamily: theme.core.headingFont, 
           color: theme.core.primary,
           opacity: lastLatched ? 1 : 0,
-          transition: 'opacity 200ms'
+          transition: 'opacity 200ms',
+          textAlign: 'center',
+          fontWeight: 'bold'
         }}>
-          {lastLatched ? `Latched: ${lastLatched}` : ''}
+          {lastLatched ? `✓ ${lastLatched}` : ''}
         </div>
       </div>
     </div>
   );
 };
 
-const Badge: React.FC<{ label: string; bg: string; color: string; pulse?: boolean }> = ({ label, bg, color, pulse }) => {
-  const { theme } = useTheme();
-  return (
-    <span style={{
-      background: bg, color,
-      padding: '3px 10px', borderRadius: 99,
-      fontSize: 10, fontFamily: theme.core.headingFont,
-      fontWeight: 'bold', letterSpacing: '0.08em',
-      animation: pulse ? 'pulse 1.2s ease-in-out infinite' : 'none',
-    }}>
-      {label}
-    </span>
-  );
-};

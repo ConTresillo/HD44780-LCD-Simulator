@@ -8,8 +8,7 @@ import { StoreProvider } from './store/store';
 import { Navbar } from './components/layout/Navbar';
 import { DisplayPanel } from './features/display/DisplayPanel';
 import { ControlPanel } from './features/controls/ControlPanel';
-import { UnifiedInputPanel } from './features/controls/UnifiedInputPanel';
-import { GpioPanel } from './features/controls/GpioPanel';
+import { InterpreterPanel } from './features/state/InterpreterPanel';
 import { LogPanel } from './features/logs/LogPanel';
 
 export default function App() {
@@ -22,9 +21,9 @@ export default function App() {
   );
 }
 
-import { InterpreterPanel } from './features/state/InterpreterPanel';
-
 function AppShell() {
+  const [isLogExpanded, setIsLogExpanded] = React.useState(false);
+
   return (
     <div style={{
       height: '100vh',
@@ -32,7 +31,7 @@ function AppShell() {
       flexDirection: 'column',
       background: 'var(--app-bg)',
       color: 'var(--app-text)',
-      fontFamily: 'var(--app-font)',
+      fontFamily: '"Outfit", sans-serif',
       overflow: 'hidden',
     }}>
       <Navbar />
@@ -40,61 +39,100 @@ function AppShell() {
       <main style={{
         flex: 1,
         display: 'grid',
-        gridTemplateColumns: '320px 1fr 320px',
+        gridTemplateColumns: '260px 1fr 260px',
         gridTemplateRows: '1fr auto',
         width: '100%',
         boxSizing: 'border-box',
         overflow: 'hidden',
       }}>
         {/* LEFT: LIVE INTERPRETER */}
-        <div style={{ 
+        <aside style={{ 
           borderRight: '1px solid var(--app-border)', 
           background: 'var(--app-surface)',
-          padding: '24px',
+          padding: '16px',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: 32
+          gap: 20
         }}>
           <InterpreterPanel />
-          <GpioPanel />
-        </div>
+        </aside>
 
         {/* CENTER: PRIMARY FLOW (LCD -> BUS -> INPUT) */}
-        <div style={{ 
+        <section style={{ 
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center', 
-          justifyContent: 'center',
           padding: '20px',
-          gap: 40,
+          gap: 24,
           background: 'var(--app-bg)',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          position: 'relative'
         }}>
           <DisplayPanel />
-          <div style={{ width: '100%', maxWidth: 600 }}>
-             <UnifiedInputPanel />
-          </div>
-        </div>
+        </section>
 
         {/* RIGHT: Quick Controls */}
-        <div style={{ 
+        <aside style={{ 
           borderLeft: '1px solid var(--app-border)', 
           background: 'var(--app-surface)',
-          padding: '24px',
+          padding: '16px',
           overflowY: 'auto'
         }}>
           <ControlPanel />
-        </div>
+        </aside>
 
-        {/* BOTTOM: Global Audit Logs */}
+        {/* BOTTOM: Collapsible Log Panel */}
         <div style={{ 
           gridColumn: '1 / -1',
           borderTop: '1px solid var(--app-border)',
-          height: '220px',
-          background: 'var(--app-surface)'
+          background: 'var(--app-surface)',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          height: isLogExpanded ? '280px' : '36px',
+          transition: 'height 300ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
-          <LogPanel />
+          {/* Collapse Toggle */}
+          <button 
+            onClick={() => setIsLogExpanded(!isLogExpanded)}
+            style={{
+              position: 'absolute',
+              top: -12,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'var(--app-border)',
+              border: 'none',
+              borderRadius: '12px',
+              color: 'var(--app-text)',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              padding: '2px 12px',
+              cursor: 'pointer',
+              zIndex: 10,
+              boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            }}
+          >
+            {isLogExpanded ? '▼ HIDE LOGS' : '▲ SHOW LOGS'}
+          </button>
+          
+          <div style={{ flex: 1, overflow: 'hidden', display: isLogExpanded ? 'block' : 'none' }}>
+            <LogPanel />
+          </div>
+          {!isLogExpanded && (
+            <div style={{ 
+              height: '36px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              padding: '0 16px',
+              fontSize: '11px',
+              color: 'var(--app-muted)',
+              fontWeight: 'bold',
+              letterSpacing: '0.05em'
+            }}>
+              SYSTEM LOGS (COLLAPSED)
+            </div>
+          )}
         </div>
       </main>
     </div>

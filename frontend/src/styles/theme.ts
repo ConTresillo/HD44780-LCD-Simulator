@@ -124,6 +124,15 @@ export interface Theme {
     controlColor: string;
     timestampColor: string;
   };
+
+  diagnostic: {
+    background: string;
+    border: string;
+    text: string;
+    label: string;
+    value: string;
+    shadow: string;
+  };
 }
 
 // ── Neon Blue theme ──────────────────────────────────────────────────────────
@@ -173,7 +182,7 @@ export const neonBlue: Theme = {
     inactiveBorder: '#1e2d45',
     inactiveText: '#4a6a90',
     activeBorder: '#38bdf8',
-    activeText: '#38bdf8',
+    activeText: '#080c14',
     activeShadow: '0 0 8px #38bdf880',
     hoverBorder: '#2a5070',
     hoverText: '#7ab8d8',
@@ -248,6 +257,15 @@ export const neonBlue: Theme = {
     controlColor: '#fbbf24',
     timestampColor: '#3a5070',
   },
+
+  diagnostic: {
+    background: '#0a1020f0',
+    border: '#38bdf840',
+    text: '#38bdf8',
+    label: '#3a5070',
+    value: '#ffffff',
+    shadow: '0 12px 32px #00000080',
+  },
 };
 
 // ── Classic Green theme ──────────────────────────────────────────────────────
@@ -297,7 +315,7 @@ export const classicGreen: Theme = {
     inactiveBorder: '#1a3a1a',
     inactiveText: '#3a6a3a',
     activeBorder: '#39ff14',
-    activeText: '#39ff14',
+    activeText: '#060d06',
     activeShadow: '0 0 8px #39ff1480',
     hoverBorder: '#2a5a2a',
     hoverText: '#6abf6a',
@@ -371,6 +389,15 @@ export const classicGreen: Theme = {
     errorColor: '#f87171',
     controlColor: '#fbbf24',
     timestampColor: '#2a4a2a',
+  },
+
+  diagnostic: {
+    background: '#040a04f0',
+    border: '#39ff1440',
+    text: '#39ff14',
+    label: '#2a4a2a',
+    value: '#a8d8a8',
+    shadow: '0 12px 32px #00000080',
   },
 };
 

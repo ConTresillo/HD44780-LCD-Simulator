@@ -23,17 +23,17 @@ export const DataPin: React.FC<DataPinProps> = ({ label, active, onClick }) => {
       onMouseLeave={() => setHovered(false)}
       style={{
         width: 40, height: 40,
-        borderRadius: 6,
-        border: `1px solid ${active ? theme.dataPin.activeBorder : hovered ? theme.dataPin.hoverBorder ?? theme.dataPin.inactiveBorder : theme.dataPin.inactiveBorder}`,
-        background: theme.dataPin.inactiveBg,
-        color: active ? theme.dataPin.activeText : hovered ? theme.dataPin.hoverText ?? theme.dataPin.inactiveText : theme.dataPin.inactiveText,
-        boxShadow: active ? theme.dataPin.activeShadow : 'none',
-        transform: active ? 'scale(1.06)' : hovered ? 'scale(1.02)' : 'scale(1)',
+        borderRadius: 8,
+        border: `1px solid ${active ? theme.dataPin.activeBorder : hovered ? (theme.dataPin.hoverBorder || theme.dataPin.inactiveBorder) : theme.dataPin.inactiveBorder}`,
+        background: active ? theme.dataPin.activeBorder : theme.dataPin.inactiveBg,
+        color: active ? theme.dataPin.activeText : hovered ? (theme.dataPin.hoverText || theme.dataPin.inactiveText) : theme.dataPin.inactiveText,
+        boxShadow: active ? theme.dataPin.activeShadow : hovered ? `0 0 10px ${theme.core.border}` : 'none',
+        transform: active ? 'scale(1.08)' : hovered ? 'scale(1.15)' : 'scale(1)',
         fontFamily: theme.core.bodyFont,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 'bold',
         cursor: 'pointer',
-        transition: 'all 160ms ease-out',
+        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         userSelect: 'none',
       }}
     >
@@ -48,8 +48,9 @@ export interface PulseButtonProps {
   isActive?: boolean;
   onClick?: () => void;
   fullWidth?: boolean;
+  style?: React.CSSProperties;
 }
-export const PulseButton: React.FC<PulseButtonProps> = ({ label, isActive, onClick, fullWidth }) => {
+export const PulseButton: React.FC<PulseButtonProps> = ({ label, isActive, onClick, fullWidth, style }) => {
   const { theme } = useTheme();
   const [st, setSt] = useState<'idle'|'hover'|'active'>('idle');
 
@@ -76,6 +77,7 @@ export const PulseButton: React.FC<PulseButtonProps> = ({ label, isActive, onCli
         transform: st === 'active' ? 'scale(1.04)' : 'scale(1)',
         transition: 'all 200ms ease-out',
         userSelect: 'none',
+        ...style
       }}
     >
       {label}
@@ -88,8 +90,9 @@ export interface IconButtonProps {
   label: string;
   onClick?: () => void;
   variant?: 'default' | 'danger' | 'success';
+  style?: React.CSSProperties;
 }
-export const IconButton: React.FC<IconButtonProps> = ({ label, onClick, variant = 'default' }) => {
+export const IconButton: React.FC<IconButtonProps> = ({ label, onClick, variant = 'default', style }) => {
   const { theme } = useTheme();
   const [st, setSt] = useState<'idle'|'hover'|'active'>('idle');
 
@@ -108,13 +111,14 @@ export const IconButton: React.FC<IconButtonProps> = ({ label, onClick, variant 
         padding: '8px 16px', borderRadius: 6,
         border: `1px solid ${theme.iconButton.border}`,
         background: bg, color,
-        boxShadow: st === 'active' ? theme.iconButton.activeShadow : 'none',
+        boxShadow: st === 'active' ? theme.iconButton.activeShadow : st === 'hover' ? `0 0 10px ${theme.core.primary}40` : 'none',
         fontFamily: theme.core.bodyFont,
         fontSize: 11, fontWeight: 'bold', cursor: 'pointer',
-        transform: st === 'active' ? 'scale(1.04)' : 'scale(1)',
-        transition: 'all 300ms ease-out',
+        transform: st === 'active' ? 'scale(0.96)' : st === 'hover' ? 'scale(1.05)' : 'scale(1)',
+        transition: 'all 200ms ease-out',
         userSelect: 'none',
         whiteSpace: 'nowrap',
+        ...style
       }}
     >
       {label}
@@ -158,9 +162,11 @@ export interface TextInputProps {
   value: string;
   placeholder?: string;
   onChange: (v: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   width?: number | string;
 }
-export const TextInput: React.FC<TextInputProps> = ({ value, placeholder, onChange, width = 120 }) => {
+export const TextInput: React.FC<TextInputProps> = ({ value, placeholder, onChange, onFocus, onBlur, width = 120 }) => {
   const { theme } = useTheme();
   return (
     <input
@@ -178,8 +184,14 @@ export const TextInput: React.FC<TextInputProps> = ({ value, placeholder, onChan
         transition: 'border-color 150ms',
         '--ti-placeholder-color': theme.textInput.placeholder,
       } as React.CSSProperties}
-      onFocus={e => e.target.style.borderColor = theme.textInput.focusBorder}
-      onBlur={e => e.target.style.borderColor = theme.textInput.border}
+      onFocus={e => {
+        e.target.style.borderColor = theme.textInput.focusBorder;
+        onFocus?.();
+      }}
+      onBlur={e => {
+        e.target.style.borderColor = theme.textInput.border;
+        onBlur?.();
+      }}
     />
   );
 };
