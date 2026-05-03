@@ -160,6 +160,7 @@ export const LcdDisplay: React.FC<Props> = ({ view, blinkOn, hardware }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>ADDRESSING</div>
             <div>Pointer: <span style={{ color: theme.diagnostic.value }}>0x{hardware.addressPointer.toString(16).toUpperCase()}</span></div>
+            <div>Cursor: <span style={{ color: theme.diagnostic.value }}>{view.cursor.row === -1 ? 'HIDDEN' : `R${view.cursor.row} C${view.cursor.col}`}</span></div>
             <div>RAM: <span style={{ color: theme.diagnostic.value }}>{hardware.ramType}</span></div>
           </div>
 
@@ -174,6 +175,7 @@ export const LcdDisplay: React.FC<Props> = ({ view, blinkOn, hardware }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ color: theme.diagnostic.label, fontWeight: 'bold', fontSize: 8 }}>MODE</div>
             <div>Entry: <span style={{ color: theme.diagnostic.value }}>{hardware.entryModeIncrement ? 'INC' : 'DEC'}</span></div>
+            <div>Shift: <span style={{ color: theme.diagnostic.value }}>{hardware.shiftOffset}</span></div>
             <div>Bus: <span style={{ color: theme.diagnostic.value }}>{hardware.dataLength}-bit</span></div>
           </div>
 

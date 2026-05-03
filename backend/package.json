@@ -5,9 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsx run_server.ts",
-    "dev": "tsx run_server.ts",
-    "test": "vitest"
+    "start": "npx tsx run_server.ts",
+    "dev": "npx tsx run_server.ts",
+    "test": "npm test --prefix backend"
   },
   "keywords": [],
   "author": "",
