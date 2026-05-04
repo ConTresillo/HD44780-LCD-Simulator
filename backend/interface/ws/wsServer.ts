@@ -8,12 +8,20 @@ import { AIAgent } from '../../ai/agent.js';
 import { AIAuth } from '../../ai/auth.js';
 
 export function createServer(port: number, service: LCDService): WebSocketServer {
+  const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map(o => o.trim());
+
   const server = http.createServer((req, res) => {
-    // CORS configuration for the frontend
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    const origin = req.headers.origin || '';
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+    // CORS — dynamic origin from env, supports multiple comma-separated values
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
