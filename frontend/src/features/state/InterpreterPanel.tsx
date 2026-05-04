@@ -5,6 +5,8 @@
 import React from 'react';
 import { useTheme } from '../../app/ThemeProvider';
 import { useLCD } from '../../hooks/useLCD';
+import { LcdCell } from '../../components/lcd/LcdCell';
+import { charToBitmap } from '../../components/lcd/LcdDisplay';
 
 // --- DATA SCHEMA ---
 type CommandGroup = {
@@ -130,14 +132,14 @@ export const InterpreterPanel: React.FC = () => {
     height: '100%',
     overflowY: 'auto',
     overflowX: 'hidden', // Prevent horizontal spill
-    padding: '20px 16px',
+    padding: '8px 6px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 24,
+    gap: 8,
     background: theme.core.background,
     borderRight: `1px solid ${theme.panel.border}`,
     boxSizing: 'border-box',
-    fontFamily: "'Outfit', sans-serif"
+    fontFamily: "'Inter', sans-serif"
   };
 
   const group = GROUPS.find(g => (data & g.mask) === g.base);
@@ -179,12 +181,12 @@ export const InterpreterPanel: React.FC = () => {
                 </div>
                 <div style={{
                   width: '100%',
-                  aspectRatio: '0.9',
-                  background: val ? theme.core.primary : theme.core.background,
+                  aspectRatio: '1',
+                  background: val ? theme.core.primary : theme.panel.background,
                   color: val ? '#fff' : theme.core.muted,
                   borderRadius: 4,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 10, fontWeight: 900,
+                  fontSize: 8, fontWeight: 900,
                   border: `1px solid ${val ? theme.core.primary : theme.panel.border}`,
                   transition: 'all 150ms ease',
                   minWidth: 0 // Allow shrinking
@@ -198,11 +200,11 @@ export const InterpreterPanel: React.FC = () => {
       </div>
 
       {/* 2. MODE CONTENT */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {rs ? (
           <DataModeView data={data} theme={theme} />
         ) : (
-          group ? <CommandGroupView data={data} group={group} theme={theme} /> : <div style={{ textAlign: 'center', opacity: 0.5, fontSize: 12 }}>Unrecognized Signal</div>
+          group ? <CommandGroupView data={data} group={group} theme={theme} /> : <div style={{ textAlign: 'center', opacity: 0.5, fontSize: 10 }}>Wait for signal...</div>
         )}
       </div>
     </div>
@@ -213,18 +215,18 @@ const CommandGroupView: React.FC<{ data: number, group: CommandGroup, theme: any
   const variants = generateVariants(group);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
       {/* HEADER */}
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: theme.core.primary, marginBottom: 2, letterSpacing: '-0.01em' }}>{group.name}</div>
-        <div style={{ fontSize: 11, opacity: 0.5, fontFamily: 'monospace' }}>
-          HEX: 0x{data.toString(16).toUpperCase()} • BIN: {data.toString(2).padStart(8, '0')}
+        <div style={{ fontSize: 16, fontWeight: 800, color: theme.core.primary, marginBottom: 1 }}>{group.name}</div>
+        <div style={{ fontSize: 9, opacity: 0.5 }}>
+          0x{data.toString(16).toUpperCase()} • {data.toString(2).padStart(8, '0')}
         </div>
       </div>
 
       {/* BIT FLAGS */}
       {group.bits.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {group.bits.map(b => {
             const val = (data >> b.position) & 1;
             const label = b.values.find(v => v.bit === val)?.label;
@@ -232,15 +234,14 @@ const CommandGroupView: React.FC<{ data: number, group: CommandGroup, theme: any
               <div key={b.name} style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                padding: '10px 12px',
+                gap: 6,
+                padding: '6px 8px',
                 background: `${theme.core.surfaceAlt}55`,
-                borderRadius: 10,
-                border: `1px solid ${theme.panel.border}44`,
-                minWidth: 0
+                borderRadius: 6,
+                border: `1px solid ${theme.panel.border}44`
               }}>
-                <div style={{ fontSize: 9, fontWeight: 900, color: theme.core.primary, background: `${theme.core.primary}15`, padding: '4px 6px', borderRadius: 4, flexShrink: 0 }}>{b.name}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                <div style={{ fontSize: 7, fontWeight: 900, color: theme.core.primary, background: `${theme.core.primary}15`, padding: '2px 4px', borderRadius: 4 }}>{b.name}</div>
+                <div style={{ fontSize: 10, fontWeight: 600 }}>{label}</div>
               </div>
             );
           })}
@@ -249,25 +250,24 @@ const CommandGroupView: React.FC<{ data: number, group: CommandGroup, theme: any
 
       {/* VARIANTS (RESPONSIVE) */}
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 9, fontWeight: 800, opacity: 0.4, marginBottom: 12, letterSpacing: '0.1em' }}>AVAILABLE VARIANTS</div>
+        <div style={{ fontSize: 8, fontWeight: 800, opacity: 0.4, marginBottom: 6, letterSpacing: '0.1em' }}>AVAILABLE VARIANTS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {variants.map(v => (
             <div key={v.hex} style={{
               display: 'flex',
-              padding: '8px 10px',
+              padding: '4px 6px',
               background: v.hex === data ? `${theme.core.primary}10` : 'transparent',
-              borderRadius: 8,
-              border: `1px solid ${v.hex === data ? `${theme.core.primary}25` : 'transparent'}`,
+              borderRadius: 4,
               opacity: v.hex === data ? 1 : 0.4,
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 8,
+              gap: 6,
               minWidth: 0
             }}>
-              <span style={{ fontSize: 12, fontWeight: v.hex === data ? 700 : 500, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 10, fontWeight: v.hex === data ? 700 : 500, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {v.label}
               </span>
-              <code style={{ fontSize: 10, fontWeight: 800, color: theme.core.primary, flexShrink: 0 }}>
+              <code style={{ fontSize: 8, fontWeight: 800, color: theme.core.primary }}>
                 0x{v.hex.toString(16).toUpperCase()}
               </code>
             </div>
@@ -296,27 +296,39 @@ const CommandGroupView: React.FC<{ data: number, group: CommandGroup, theme: any
   );
 };
 
-const DataModeView: React.FC<{ data: number, theme: any }> = ({ data, theme }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
-    <div style={{ fontSize: 20, fontWeight: 800 }}>Data Mode</div>
-    <div style={{
-      background: theme.core.surfaceAlt,
-      aspectRatio: '1',
-      borderRadius: 24,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      border: `1px solid ${theme.panel.border}`,
-      minWidth: 0
-    }}>
-      <div style={{ fontSize: 72, fontWeight: 900, color: theme.core.primary }}>
-        {data >= 32 && data <= 126 ? String.fromCharCode(data) : '?'}
+const DataModeView: React.FC<{ data: number, theme: any }> = ({ data, theme }) => {
+  const char = data >= 32 && data <= 126 ? String.fromCharCode(data) : ' ';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+      <div style={{ fontSize: 14, fontWeight: 800, width: '100%' }}>Data Write</div>
+      
+      {/* 5x8 Pixel Preview */}
+      <div style={{
+        background: theme.lcd?.glass || theme.core.surfaceAlt,
+        width: '100%',
+        padding: '10px 0',
+        borderRadius: 10,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        border: `1px solid ${theme.panel.border}`,
+        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.05)'
+      }}>
+        <div style={{ transform: 'scale(1.8)' }}>
+          <LcdCell bitmap={charToBitmap(data)} />
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: theme.core.primary }}>'{char}'</div>
       </div>
-      <div style={{ fontSize: 12, opacity: 0.4, marginTop: 12, fontFamily: 'monospace' }}>0x{data.toString(16).toUpperCase()}</div>
+
+      <div style={{ display: 'flex', gap: 6, width: '100%' }}>
+        <div style={{ flex: 1, background: theme.core.surfaceAlt, padding: 6, borderRadius: 6, textAlign: 'center', border: `1px solid ${theme.panel.border}` }}>
+          <div style={{ fontSize: 7, opacity: 0.5, marginBottom: 1 }}>HEX</div>
+          <div style={{ fontSize: 11, fontWeight: 800 }}>0x{data.toString(16).toUpperCase()}</div>
+        </div>
+        <div style={{ flex: 1, background: theme.core.surfaceAlt, padding: 6, borderRadius: 6, textAlign: 'center', border: `1px solid ${theme.panel.border}` }}>
+          <div style={{ fontSize: 7, opacity: 0.5, marginBottom: 1 }}>DEC</div>
+          <div style={{ fontSize: 11, fontWeight: 800 }}>{data}</div>
+        </div>
+      </div>
     </div>
-    <div style={{ fontSize: 12, opacity: 0.5, textAlign: 'center', lineHeight: 1.5 }}>
-      Character write to DDRAM or CGRAM based on current address counter.
-    </div>
-  </div>
-);
+  );
+};
