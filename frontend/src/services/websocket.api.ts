@@ -11,7 +11,7 @@ const HardwareStateSchema = z.any();
 const ViewSchema = z.any();
 const StateUpdateSchema = z.any();
 
-export function createWebSocketAPI(url: string = 'ws://localhost:3000'): LCDAPI {
+export function createWebSocketAPI(url: string = import.meta.env.VITE_WS_URL || 'ws://localhost:3000'): LCDAPI {
   let ws: WebSocket | null = null;
   let status: ConnectionStatus = 'disconnected';
   let reconnectTimer: any = null;

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../app/ThemeProvider';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 interface Props {
   onLoginSuccess: () => void;
 }
@@ -17,7 +19,7 @@ export function AILoginScreen({ onLoginSuccess }: Props) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/ai/login', {
+      const response = await fetch(`${API_BASE}/api/ai/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
