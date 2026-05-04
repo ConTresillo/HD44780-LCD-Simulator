@@ -8,7 +8,9 @@ export type ClientMessage =
   | { type: 'GPIO_SIGNAL'; data: number; rs: boolean; rw: boolean; en: boolean }
   | { type: 'PULSE_GPIO'; data: number; rs: boolean; rw: boolean }
   | { type: 'RESET' }
-  | { type: 'UPDATE_CONFIG'; config: any };
+  | { type: 'UPDATE_GLYPH'; index: number; bitmap: number[] }
+  | { type: 'UPDATE_CONFIG'; config: any }
+  | { type: 'AI_REQUEST'; prompt: string; password?: string };
 
 export type ServerMessage =
   | { 

@@ -20,6 +20,18 @@ node_modules/
 /run_server.ts
 /manual_ws_test.test.ts
 
+# Standard build outputs and temp files
+dist/
+build/
+.DS_Store
+*.log
+.eslintcache
+
+# Ensure environment files are NEVER committed
+.env
+.env.*
+.env.local
+
 # Re-include essential config files required for the backend to run
 !/package.json
 !/package-lock.json

@@ -17,6 +17,7 @@ export type UseLCDReturn = {
   writeData: (byte: number) => void;
   sendGPIO: (data: number, rs: boolean, rw: boolean, en: boolean) => void;
   reset: () => void;
+  updateGlyph: (index: number, bitmap: number[]) => void;
   updateConfig: (config: any) => void;
   pulseEN: (data: number, rs: boolean, rw: boolean) => void;
   busState: { data: number, rs: boolean, rw: boolean, en: boolean };
@@ -44,6 +45,7 @@ export function useLCD(): UseLCDReturn {
     writeData: (byte) => api.writeData(byte),
     sendGPIO: (data, rs, rw, en) => api.sendGPIO(data, rs, rw, en),
     reset: () => api.reset(),
+    updateGlyph: (index, bitmap) => api.updateGlyph(index, bitmap),
     updateConfig: (config) => api.sendUpdateConfig(config),
 
     pulseEN: (data, rs, rw) => {

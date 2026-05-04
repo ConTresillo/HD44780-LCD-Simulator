@@ -190,8 +190,16 @@ export function createWebSocketAPI(url: string = 'ws://localhost:3000'): LCDAPI 
       send({ type: 'RESET' });
     },
     
+    updateGlyph(index: number, bitmap: number[]) {
+      send({ type: 'UPDATE_GLYPH', index, bitmap });
+    },
+
     sendUpdateConfig(config: any) {
       send({ type: 'UPDATE_CONFIG', config });
+    },
+
+    sendAIRequest(prompt: string) {
+      send({ type: 'AI_REQUEST', prompt });
     },
 
     onStateUpdate(cb) {
@@ -211,6 +219,8 @@ export function createWebSocketAPI(url: string = 'ws://localhost:3000'): LCDAPI 
 
     getStatus() {
       return status;
-    }
+    },
+
+    version: '2.0-ai'
   };
 }

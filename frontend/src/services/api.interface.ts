@@ -18,11 +18,14 @@ export interface LCDAPI {
   sendGPIO(data: number, rs: boolean, rw: boolean, en: boolean): void;
   pulseGPIO(data: number, rs: boolean, rw: boolean): void;
   reset(): void;
+  updateGlyph(index: number, bitmap: number[]): void;
   sendUpdateConfig: (config: any) => void;
+  sendAIRequest(prompt: string): void;
 
   onStateUpdate(cb: (payload: LCDStatePayload) => void): () => void;
   onLog(cb: (log: LogEntry) => void): () => void;
   onConnectionChange(cb: (status: ConnectionStatus) => void): () => void;
 
   getStatus(): ConnectionStatus;
+  version: string;
 }

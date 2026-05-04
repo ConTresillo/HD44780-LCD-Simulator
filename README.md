@@ -615,3 +615,23 @@ frontend/
 * Communication = real-time event stream
 * Domain = hardware-accurate behavior core
 
+---
+
+# 11. AI Integration (Phase 2)
+The simulator now includes an AI Agent capable of controlling the LCD via natural language.
+
+### Configuration
+1. Create a `.env` file in the `backend/` directory.
+2. Add your Google API Key: `GOOGLE_API_KEY=your_key_here`.
+3. The system prompt can be tuned in `backend/ai/agent.ts` via the `SYSTEM_PROMPT` constant.
+
+### Usage
+In any CLI (Local or Remote), use the `ai` prefix:
+```bash
+ai write a welcome message on the first line and center it
+ai clear the screen then blink the cursor
+```
+
+### AI Pipeline Flow
+`User Input → Backend Agent → LLM (ReAct) → JSON Payload → Validator → CLI Executor → LCD Service`
+

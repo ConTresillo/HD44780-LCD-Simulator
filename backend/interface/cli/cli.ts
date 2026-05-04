@@ -2,8 +2,10 @@ import * as readline from 'readline';
 import { LCDService } from '../../application/services/lcdService.js';
 import type { BusTrace } from '../../domain/lcd/types.js';
 import { getRowOffsets } from '../../domain/lcd/lcdLayout.js';
+import { AIAgent } from '../../ai/agent.js';
 
 const lcdService = new LCDService();
+const aiAgent = new AIAgent(lcdService);
 
 let lastTrace: BusTrace | null = null;
 let currentData = 0;
@@ -164,7 +166,7 @@ const rl = readline.createInterface({
     prompt: 'LCD> '
 });
 
-rl.on('line', (line) => {
+rl.on('line', async (line) => {
     const parts = line.trim().split(/\s+/);
     const cmd = parts[0].toLowerCase();
     
@@ -266,6 +268,19 @@ rl.on('line', (line) => {
                 console.log('Exiting LCD Simulator CLI.');
                 process.exit(0);
                 break;
+            case 'ai':
+                if (parts.length > 2) {
+                    const password = parts[1];
+                    const prompt = parts.slice(2).join(' ');
+                    logs.push(`🤖 Authenticating and thinking about: "${prompt}"...`);
+                    render();
+                    const response = await aiAgent.handleUserRequest(prompt, password);
+                    logs.push(`\n💬 ${response}`);
+                } else {
+                    logs.push('Usage: ai <password> <your instruction>');
+                }
+                break;
+
             default:
                 logs.push(`Unknown command: ${cmd}`);
                 break;

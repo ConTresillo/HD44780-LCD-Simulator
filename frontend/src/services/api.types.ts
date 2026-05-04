@@ -33,6 +33,8 @@ export type LCDView = {
   cols: number;
   display: number[][];
   cursor: { row: number; col: number };
+  cursorOn: boolean;
+  blinkOn: boolean;
   cursorVisible: boolean;
   glyphs: number[][][];
 };

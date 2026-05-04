@@ -9,7 +9,9 @@ import { Navbar } from './components/layout/Navbar';
 import { DisplayPanel } from './features/display/DisplayPanel';
 import { ControlPanel } from './features/controls/ControlPanel';
 import { InterpreterPanel } from './features/state/InterpreterPanel';
+import { CgramEditorPanel } from './features/state/CgramEditorPanel';
 import { LogPanel } from './features/logs/LogPanel';
+import { AIContainer } from './features/ai/AIContainer';
 
 export default function App() {
   return (
@@ -39,18 +41,18 @@ function AppShell() {
       <main style={{
         flex: 1,
         display: 'grid',
-        gridTemplateColumns: '260px 1fr 260px',
+        gridTemplateColumns: '320px 1fr 260px',
         gridTemplateRows: '1fr auto',
         width: '100%',
         boxSizing: 'border-box',
         overflow: 'hidden',
       }}>
-        {/* LEFT: LIVE INTERPRETER */}
+        {/* LEFT: LIVE INTERPRETER & AI CHAT */}
         <aside style={{ 
           borderRight: '1px solid var(--app-border)', 
           background: 'var(--app-surface)',
           padding: '16px',
-          overflowY: 'auto',
+          overflowY: 'hidden', // Parent is hidden, children scroll
           display: 'flex',
           flexDirection: 'column',
           gap: 20
@@ -77,9 +79,13 @@ function AppShell() {
           borderLeft: '1px solid var(--app-border)', 
           background: 'var(--app-surface)',
           padding: '16px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 32
         }}>
           <ControlPanel />
+          <CgramEditorPanel />
         </aside>
 
         {/* BOTTOM: Collapsible Log Panel */}
@@ -135,6 +141,9 @@ function AppShell() {
           )}
         </div>
       </main>
+
+      {/* FLOATING AI ASSISTANT OVERLAY */}
+      <AIContainer />
     </div>
   );
 }

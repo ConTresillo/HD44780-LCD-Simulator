@@ -28,7 +28,9 @@ export function setupEventBridge(ws: WebSocket, service: LCDService): () => void
         cols: config.displayCols,
         display: service.getVisibleDisplay(),
         cursor: { row: cursor.row, col: cursor.col },
-        cursorVisible: cursor.row !== -1 && stateEvent.state.cursorOn && stateEvent.state.displayOn,
+        cursorOn: stateEvent.state.cursorOn,
+        blinkOn: stateEvent.state.blinkOn,
+        cursorVisible: cursor.row !== -1 && stateEvent.state.displayOn,
         glyphs: service.getGlyphs()
       };
 

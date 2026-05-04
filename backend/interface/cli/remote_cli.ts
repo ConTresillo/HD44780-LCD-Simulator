@@ -197,6 +197,16 @@ rl.on('line', (line) => {
             case 'quit':
                 ws.close();
                 break;
+            case 'ai':
+                if (parts.length > 2) {
+                    const password = parts[1];
+                    const prompt = parts.slice(2).join(' ');
+                    ws.send(JSON.stringify({ type: 'AI_REQUEST', prompt, password }));
+                    logs.push(`🤖 Sent Authenticated AI prompt to server: "${prompt}"`);
+                } else {
+                    logs.push('Usage: ai <password> <your instruction>');
+                }
+                break;
             default:
                 logs.push(`Unknown remote command: ${cmd}`);
                 break;

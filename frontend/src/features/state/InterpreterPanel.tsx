@@ -6,7 +6,7 @@ import React from 'react';
 import { useTheme } from '../../app/ThemeProvider';
 import { useLCD } from '../../hooks/useLCD';
 import { LcdCell } from '../../components/lcd/LcdCell';
-import { charToBitmap } from '../../components/lcd/LcdDisplay';
+import { charToBitmap } from '../../components/lcd/fontRom';
 
 // --- DATA SCHEMA ---
 type CommandGroup = {
@@ -129,7 +129,6 @@ export const InterpreterPanel: React.FC = () => {
     minWidth: 320,
     maxWidth: 320,
     flexShrink: 0,
-    height: '100%',
     overflowY: 'auto',
     overflowX: 'hidden', // Prevent horizontal spill
     padding: '8px 6px',

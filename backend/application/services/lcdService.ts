@@ -179,7 +179,8 @@ export class LCDService {
   }
   
   public getCursorPosition(): { row: number, col: number } {
-    // Invariant: If display is OFF or cursor is OFF, it is not visible
+    // Invariant: If display is OFF or cursor is OFF, it is not visible.
+    // The HD44780 spec states that Blink (B) only animates the cursor if Cursor (C) is ON.
     if (!this.state.displayOn || !this.state.cursorOn) {
       return { row: -1, col: -1 };
     }
@@ -245,6 +246,16 @@ export class LCDService {
       // 3. EN=Low (Falling edge triggers execution)
       this.processGPIO(data, rs, false, rw);
     }, 2); // 2ms hardware strobe
+  }
+
+  public updateGlyph(index: number, bitmap: number[]): void {
+    if (index < 0 || index > 7) return;
+    const base = index * 8;
+    for (let i = 0; i < 8; i++) {
+      this.state.cgram[base + i] = (bitmap[i] ?? 0) & 0x1F;
+    }
+    this.logService.log('CONTROL', `Updated CGRAM Glyph at index ${index}`);
+    this.emitStateUpdate();
   }
 
   public emitStateUpdate(): void {
