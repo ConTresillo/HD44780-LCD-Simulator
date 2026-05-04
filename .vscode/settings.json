@@ -1,0 +1,10 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts, ${capture}.js.map, ${capture}.d.ts.map",
+    "*.tsx": "${capture}.js, ${capture}.d.ts, ${capture}.js.map, ${capture}.d.ts.map",
+    "package.json": "package-lock.json, tsconfig.json, .gitignore, README.md, Phase*.md, adversarial*.json, final*.json, results*.json",
+    "vite.config.ts": "vite.config.js, vite.config.d.ts, vite.config.js.map, vite.config.d.ts.map"
+  }
+}
