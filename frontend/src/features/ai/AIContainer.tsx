@@ -12,10 +12,13 @@ export function AIContainer() {
   const { theme } = useTheme();
 
   const handleLoginSuccess = () => {
-    // Force a WebSocket reconnect to ensure the HTTP-only cookie is sent
-    api.disconnect();
-    api.connect();
     setIsAuthenticated(true);
+    // Delay reconnect slightly to ensure the browser commits the Set-Cookie
+    // header to its jar before the new WebSocket upgrade request fires.
+    setTimeout(() => {
+      api.disconnect();
+      setTimeout(() => api.connect(), 100);
+    }, 200);
   };
 
   return (
