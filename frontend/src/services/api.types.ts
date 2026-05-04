@@ -41,7 +41,7 @@ export type LCDView = {
 
 export type LogEntry = {
   timestamp: number;
-  type: 'COMMAND' | 'DATA' | 'ERROR' | 'CONTROL';
+  type: 'COMMAND' | 'DATA' | 'ERROR' | 'CONTROL' | 'AI';
   message: string;
 };
 

@@ -23,6 +23,8 @@ export const LogPanel: React.FC = () => {
       case 'DATA':    return theme.log.dataColor;
       case 'ERROR':   return theme.log.errorColor;
       case 'CONTROL': return theme.log.controlColor;
+      case 'AI':      return theme.core.primary;
+      default:        return theme.core.muted;
     }
   };
 

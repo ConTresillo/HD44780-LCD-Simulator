@@ -140,11 +140,7 @@ export const DisplayPanel: React.FC = () => {
       width: '100%',
     }}>
       {/* 1. LCD DISPLAY */}
-      <LcdDisplay
-        view={view}
-        blinkOn={hardware?.blinkOn ?? false}
-        hardware={hardware || undefined}
-      />
+      <LcdDisplay />
 
       {/* 2. THE SIGNAL HUB (BUS + CONTROL) */}
       <div style={{

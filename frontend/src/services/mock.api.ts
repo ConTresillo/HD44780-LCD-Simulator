@@ -64,7 +64,7 @@ function buildView(state: LCDHardwareState, cols = 16, rows = 2): LCDView {
 
   if (!state.displayOn) {
     for (let r = 0; r < rows; r++) display.push(new Array(cols).fill(0x20));
-    return { display, cursor: { row: -1, col: -1 }, cursorVisible: false, glyphs: [], rows, cols };
+    return { display, cursor: { row: -1, col: -1 }, cursorOn: false, blinkOn: false, cursorVisible: false, glyphs: [], rows, cols };
   }
 
   for (let r = 0; r < rows; r++) {
@@ -101,7 +101,7 @@ function buildView(state: LCDHardwareState, cols = 16, rows = 2): LCDView {
     glyphs.push(glyph);
   }
 
-  return { display, cursor: { row: cursorRow, col: cursorCol }, cursorVisible, glyphs, rows, cols };
+  return { display, cursor: { row: cursorRow, col: cursorCol }, cursorOn: state.cursorOn, blinkOn: state.blinkOn, cursorVisible, glyphs, rows, cols };
 }
 
 // ── Mock command processor ────────────────────────────────────────────────────
@@ -229,6 +229,9 @@ export function createMockAPI(): LCDAPI {
       emit();
     },
 
+    updateGlyph(_index: number, _bitmap: number[]) { /* mock no-op */ },
+    sendAIRequest(_prompt: string) { log('AI', 'AI not available in mock mode'); },
+    version: '2.0-ai-mock',
     onStateUpdate(cb) { stateCbs.add(cb); return () => stateCbs.delete(cb); },
     onLog(cb) { logCbs.add(cb); return () => logCbs.delete(cb); },
     onConnectionChange(cb) { statusCbs.add(cb); return () => statusCbs.delete(cb); },
